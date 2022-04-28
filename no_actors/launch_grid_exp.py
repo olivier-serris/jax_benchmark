@@ -7,6 +7,7 @@ import jax
 import pandas as pd
 from dataclasses import dataclass
 from typing import Dict
+import os
 
 
 @dataclass
@@ -72,7 +73,7 @@ def time_experiments(cfg) -> list[DataPoint]:
     return data_points
 
 
-@hydra.main(config_path='configs/', config_name="no_actor.yaml")
+@hydra.main(config_path=f'{os.getcwd()}/configs/', config_name="no_actor.yaml")
 def main(cfg):
     start = time.time()
     results = time_experiments(cfg)

@@ -24,6 +24,6 @@ save_filename : no_actor.csv
 # functions wich corresponds to rollout functions to launch
 classes : 
   fmm : 
-    _target_ : no_actors.forS_mapP_mapE
+    _target_ : rollout_no_actors.forS_mapP_mapE
   mml : 
-    _target_ : no_actors.mapP_mapE_laxS
+    _target_ : rollout_no_actors.mapP_mapE_laxS
