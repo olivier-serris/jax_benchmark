@@ -4,7 +4,7 @@ with open("README.md", "r") as readme_file:
     readme = readme_file.read()
 
 requirements = ["jax>=0.3.0", "jaxlib>=0.3.0", "brax", "chex", "numpy",
-                "seaborn", "matplotlib", "tqdm", "pandas", "omegaconf",
+                "seaborn", "matplotlib>=3.3.4", "tqdm", "pandas", "omegaconf",
                 "hydra-core", ]
 setup(
     name="jax benchmark",
