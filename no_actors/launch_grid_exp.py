@@ -8,6 +8,7 @@ import pandas as pd
 from dataclasses import dataclass
 from typing import Dict
 import os
+from typing import List
 
 
 @dataclass
@@ -22,7 +23,7 @@ class DataPoint():
 
 
 def get_rollouts_times(workers: Dict, rng: jax.random.KeyArray, n_pop: int,
-                       n_env: int, n_step: int) -> list[DataPoint]:
+                       n_env: int, n_step: int) -> List[DataPoint]:
     rollouts_data = []
     results = []
     total_steps = np.prod([n_pop, n_env, n_step])
@@ -44,7 +45,7 @@ def get_rollouts_times(workers: Dict, rng: jax.random.KeyArray, n_pop: int,
     return results
 
 
-def time_experiments(cfg) -> list[DataPoint]:
+def time_experiments(cfg) -> List[DataPoint]:
 
     # Creates Env :
     env = brax_env.create(env_name=cfg.env_name,
