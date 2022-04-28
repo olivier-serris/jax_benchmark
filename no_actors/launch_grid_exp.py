@@ -1,4 +1,3 @@
-import chex
 import hydra
 from tqdm import tqdm
 import time

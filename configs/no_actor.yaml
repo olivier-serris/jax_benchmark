@@ -1,4 +1,3 @@
-
 n_repetition: 10
 env_name : inverted_pendulum
 device : Quadro_P620
@@ -28,6 +27,3 @@ classes :
     _target_ : no_actors.forS_mapP_mapE
   mml : 
     _target_ : no_actors.mapP_mapE_laxS
-
-test_class :
-  _target_ : no_actors.forS_mapP_mapE

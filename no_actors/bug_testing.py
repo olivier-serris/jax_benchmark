@@ -5,6 +5,7 @@ from launch_grid_exp import get_rollouts_times
 
 
 def verify_recompilations():
+    '''Check id jax compiles more often then expected. '''
     rng = jax.random.PRNGKey(0)
     print('warm_up')
 
