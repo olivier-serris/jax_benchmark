@@ -30,6 +30,8 @@ def get_rollouts_times(workers: Dict, rng: jax.random.KeyArray, n_pop: int,
     for label, cls in list(workers.items()):
         start = time.time()
         rollout_data = cls.rollout(rng, n_pop, n_env, n_step)
+        for data in rollout_data:
+            data.block_until_ready()
         rollouts_data.append(rollout_data)
         total_time = time.time()-start
         exp_data = DataPoint(n_step, n_env, n_pop,
@@ -37,10 +39,6 @@ def get_rollouts_times(workers: Dict, rng: jax.random.KeyArray, n_pop: int,
                              total_steps=total_steps,
                              step_per_sec=total_steps/total_time)
         results.append(exp_data)
-
-    # sanity checks : (same data from both rollout workers) :
-    for el1, el2 in zip(*rollouts_data):
-        assert(np.allclose(el1, el2))
 
     return results
 
