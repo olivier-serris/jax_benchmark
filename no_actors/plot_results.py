@@ -8,7 +8,7 @@ import omegaconf
 CONFIG = '.hydra/config.yaml'
 
 
-def multi_plot(df, env_name, device, save_path, selects=[],show=False):
+def multi_plot(df, env_name, device, save_path, selects=[], show=False):
     '''
         plot step_per_sec  of a given df and cfg.
     '''
@@ -50,8 +50,8 @@ def multi_plot(df, env_name, device, save_path, selects=[],show=False):
             ax.set_title("Subplot row %s \n" % i, fontsize=16)
             ax.set_title(f"n_env={n_env},n_step={n_step} ")
             ax.set_yscale('log')
-            ax.set(ylim=(1e1, 1e6))
-            ax.set_yticks(10**(np.arange(1, 7)))
+            ax.set(ylim=(1e1, 1e8))
+            ax.set_yticks(10**(np.arange(1, 9)))
             c_df = df.loc[(df['n_pop'] == n_pop) &
                           (df['n_env'] == n_env) &
                           (df['n_step'] == n_step)
