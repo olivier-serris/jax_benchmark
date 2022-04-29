@@ -8,7 +8,7 @@ import omegaconf
 CONFIG = '.hydra/config.yaml'
 
 
-def multi_plot(df, env_name, device, save_path, selects=[]):
+def multi_plot(df, env_name, device, save_path, selects=[],show=False):
     '''
         plot step_per_sec  of a given df and cfg.
     '''
@@ -64,6 +64,7 @@ def multi_plot(df, env_name, device, save_path, selects=[]):
     fig.suptitle(f"Steps Per Second ({device}) ({env_name})" +
                  f" (mean of {min(n_repetitions)} exps) ")
     fig.savefig(save_path)
+    plt.show()
     plt.close(fig)
 
 
@@ -113,8 +114,8 @@ def plot_from_all_exps(save_filepath, selects, device=None):
 
 def main():
     plot_each_exp()
-    plot_from_all_exps('no_actors/plots/spc',
-                       selects=[('total_steps', 100000)])
+    # plot_from_all_exps('no_actors/plots/spc',
+    #                    selects=[('total_steps', 100000)])
 
 
 if __name__ == '__main__':
