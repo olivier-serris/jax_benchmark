@@ -7,7 +7,7 @@ import jax.numpy as jnp
 
 def get_action(rng, action_dim):
     # print("get_action is recompiled ")
-    return jp.ones(action_dim)
+    return jnp.ones(action_dim)
 
 
 def one_episode(env, n_step: int, rng_reset: chex.PRNGKey, rng_init: chex.PRNGKey):
@@ -63,11 +63,12 @@ class mapP_mapE_laxS:
             rewards has shape [n_pop, n_env, n_step]
             dones has shape [n_pop, n_env, n_step]
         '''
-        rng, *rng_reset = jax.random.split(rng, n_pop*n_env+1)
-        rng_reset = jp.array(rng_reset).reshape(n_pop, n_env, -1)
+        reset_key, init_key = jax.random.split(rng, 2)
+        rng_reset = jax.random.split(reset_key, n_pop*n_env)
+        rng_reset = rng_reset.reshape((n_pop, n_env, -1))
 
-        rng, *rng_init = jax.random.split(rng, n_pop*n_env+1)
-        rng_init = jp.array(rng_init).reshape(n_pop, n_env, -1)
+        rng_init = jax.random.split(init_key, n_pop*n_env)
+        rng_init = rng_init.reshape((n_pop, n_env, -1))
 
         results = self.all_episodes(self.env, n_step, rng_reset, rng_init)
         obs, reward, done = results
@@ -113,21 +114,23 @@ class forS_mapP_mapE:
             rewards has shape [n_pop, n_env, n_step]
             dones has shape [n_pop, n_env, n_step]
         '''
+        rng, reset_key = jax.random.split(rng)
 
-        rng, *rng_reset = jax.random.split(rng, n_pop*n_env+1)
-        rng_reset = jp.array(rng_reset).reshape(n_pop, n_env, -1)
+        rng_reset = jax.random.split(reset_key, n_pop*n_env)
+        rng_reset = rng_reset.reshape((n_pop, n_env, -1))
 
         sim_states = self.all_reset(rng_reset)
         results = [(sim_states.obs, sim_states.reward, sim_states.done)]
         for _ in range(n_step):
-            rng, *rng_actions = jax.random.split(rng, n_pop*n_env+1)
-            rng_actions = jp.array(rng_actions).reshape(n_pop, n_env, -1)
+            rng, key_action = jax.random.split(rng, 2)
+            rng_actions = jax.random.split(key_action, n_pop*n_env)
+            rng_actions = rng_actions.reshape((n_pop, n_env, -1))
             actions = self.all_actions(rng_actions, self.env.action_size)
             sim_states = self.all_step(sim_states, actions)
             step_res = (sim_states.obs, sim_states.reward, sim_states.done)
             results.append(step_res)
 
-        results = jax.tree_map(lambda *xs: jp.array(xs), *results)
+        results = jax.tree_map(lambda *xs: jnp.array(xs), *results)
         obs, reward, done = results
         obs = jnp.moveaxis(obs, (0, 1, 2, 3), (2, 0, 1, 3))
         reward = jnp.moveaxis(reward, (0, 1, 2), (2, 0, 1))
