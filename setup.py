@@ -3,9 +3,20 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as readme_file:
     readme = readme_file.read()
 
-requirements = ["jax>=0.3.0", "jaxlib>=0.3.0", "brax", "chex", "numpy",
-                "seaborn", "matplotlib>=3.3.4", "tqdm", "pandas", "omegaconf",
-                "hydra-core", ]
+requirements = [
+    "jax>=0.3.0",
+    "jaxlib>=0.3.0",
+    "brax",
+    "chex",
+    "torch",
+    "numpy",
+    "seaborn",
+    "matplotlib>=3.3.4",
+    "tqdm",
+    "pandas",
+    "omegaconf",
+    "hydra-core",
+]
 setup(
     name="jax benchmark",
     version="0.0.1",
