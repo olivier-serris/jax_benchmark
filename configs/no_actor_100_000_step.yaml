@@ -1,7 +1,7 @@
 n_repetition: 10
 env_name : inverted_pendulum
-device : Quadro_P620
 actor : no_actor
+device : ???
 
 configurations: 
   [
