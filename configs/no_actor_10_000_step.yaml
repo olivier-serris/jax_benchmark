@@ -1,5 +1,6 @@
 n_repetition: 10
 env_name : inverted_pendulum
+legacy_spring : true
 actor : no_actor
 device : ???
 
@@ -24,7 +25,7 @@ save_filename : no_actor.csv
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch
 classes : 
-  fmm : 
-    _target_ : rollout_no_actors.forS_mapP_mapE
-  mml : 
-    _target_ : rollout_no_actors.mapP_mapE_laxS
+  fmm_no : 'no_actors.exp_utils.with_pytorch_setup'
+    # _target_ : 
+  mms_no : no_actors.exp_utils.with_pytorch_setup
+    # _target_ : no_actors.exp_utils.with_jax_setup
