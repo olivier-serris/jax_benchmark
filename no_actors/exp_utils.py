@@ -1,4 +1,4 @@
-from .rollout_no_actors import forS_mapP_mapE, mapP_mapE_laxS
+from no_actors.rollout_no_actors import forS_mapP_mapE, mapP_mapE_laxS
 import brax.envs as brax_env
 import jax
 
