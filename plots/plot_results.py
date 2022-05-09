@@ -65,6 +65,8 @@ def multi_plot(df, env_name, device, save_path, selects=[], show=False):
                 & (df["n_step"] == n_step)
             ]
             g = sns.barplot(x="method", y="step_per_sec", data=c_df)
+            # g = sns.boxplot(x="method", y="step_per_sec", data=c_df)
+
             ax.bar_label(ax.containers[0], fmt="%.1e")
             g.set_xlabel(None)
             n_repetitions.append(min(c_df.groupby("method").size()))
@@ -134,7 +136,7 @@ def plot_from_all_exps(save_filepath, selects, device=None):
 
 def main():
     plot_each_exp()
-    plot_from_all_exps("no_actors/plots/spc", selects=[("total_steps", 100000)])
+    plot_from_all_exps("plots/spc", selects=[("total_steps", 100000)])
 
 
 if __name__ == "__main__":
