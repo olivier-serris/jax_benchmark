@@ -15,39 +15,50 @@ def one_episode(env, n_step: int, rng_reset: chex.PRNGKey, rng_init: chex.PRNGKe
 
     def policy_step(state_input: brax_env.State, tmp):
         """jp.scan compatible step transition in jax env."""
+        # print("policy_step is compiled")
         state, rng = state_input
         rng, rng_action = jp.random_split(rng)
         action = get_action(rng_action, env.action_size)
         next_s = env.step(state, action)
         carry = [next_s, rng]
-        return carry, [state.obs, state.reward, state.done, ]
+        return carry, [
+            state.obs,
+            state.reward,
+            state.done,
+        ]
 
-    carry, scan_out = jp.scan(
-        policy_step, [sim_state, rng_init], (), n_step
-    )
+    carry, scan_out = jp.scan(policy_step, [sim_state, rng_init], (), n_step)
     end_sim_state = carry[0]
-    obs, reward, done,  = scan_out
+    (
+        obs,
+        reward,
+        done,
+    ) = scan_out
 
-    return (jnp.vstack([obs, end_sim_state.obs]),
-            jnp.hstack([reward, end_sim_state.reward]),
-            jnp.hstack([done, end_sim_state.done]),
-            )
+    return (
+        jnp.vstack([obs, end_sim_state.obs]),
+        jnp.hstack([reward, end_sim_state.reward]),
+        jnp.hstack([done, end_sim_state.done]),
+    )
 
 
 class mapP_mapE_laxS:
-    '''
-    Parallelism strategy only compatible with JAX models 
-    Implement the pseudo code : 
+    """
+    Parallelism strategy only compatible with JAX models
+    Implement the pseudo code :
     Vmap(pop):
         Vmap(env):
             lax(steps)
                 action = np.ones()
                 env.step(action)
-    '''
+    """
 
     def __init__(self, env: brax_env.Env) -> None:
         self.env = env
-        def action(rng): return get_action(rng, env.action_size)
+
+        def action(rng):
+            return get_action(rng, env.action_size)
+
         self.get_action = action
 
         env_episodes = jax.vmap(one_episode, in_axes=(None, None, 0, 0))
@@ -56,18 +67,18 @@ class mapP_mapE_laxS:
         self.all_episodes = jax.jit(all_episodes, static_argnums=(0, 1))
 
     def rollout(self, rng: jax.random.KeyArray, n_pop: int, n_env: int, n_step: int):
-        '''
+        """
         Execute complete episodes with n_pop individual, each on n_env environments.
         return a tuple [obs,rewards,dones]
             obs has shape [n_pop, n_env, n_step, obs_dim]
             rewards has shape [n_pop, n_env, n_step]
             dones has shape [n_pop, n_env, n_step]
-        '''
+        """
         reset_key, init_key = jax.random.split(rng, 2)
-        rng_reset = jax.random.split(reset_key, n_pop*n_env)
+        rng_reset = jax.random.split(reset_key, n_pop * n_env)
         rng_reset = rng_reset.reshape((n_pop, n_env, -1))
 
-        rng_init = jax.random.split(init_key, n_pop*n_env)
+        rng_init = jax.random.split(init_key, n_pop * n_env)
         rng_init = rng_init.reshape((n_pop, n_env, -1))
 
         results = self.all_episodes(self.env, n_step, rng_reset, rng_init)
@@ -76,17 +87,17 @@ class mapP_mapE_laxS:
 
 
 class forS_mapP_mapE:
-    '''
-    Parallelism strategy compatible with Non-JAX models 
+    """
+    Parallelism strategy compatible with Non-JAX models
 
-    Implement the pseudo code : 
+    Implement the pseudo code :
     for step in range(n_steps):
         action = np.ones(n_pop,n_env)
         Vmap(pop):
             Vmap(env):
                 env.step(action)
 
-    '''
+    """
 
     def __init__(self, env: brax_env.Env) -> None:
         self.env = env
@@ -107,23 +118,23 @@ class forS_mapP_mapE:
         self.all_actions = jax.jit(all_actions, static_argnums=1)
 
     def rollout(self, rng: jax.random.KeyArray, n_pop: int, n_env: int, n_step: int):
-        '''
+        """
         Execute complete episodes with n_pop individual, each on n_env environments.
         return a tuple [obs, rewards, dones]
             obs has shape [n_pop, n_env,n_step, obs_dim]
             rewards has shape [n_pop, n_env, n_step]
             dones has shape [n_pop, n_env, n_step]
-        '''
+        """
         rng, reset_key = jax.random.split(rng)
 
-        rng_reset = jax.random.split(reset_key, n_pop*n_env)
+        rng_reset = jax.random.split(reset_key, n_pop * n_env)
         rng_reset = rng_reset.reshape((n_pop, n_env, -1))
 
         sim_states = self.all_reset(rng_reset)
         results = [(sim_states.obs, sim_states.reward, sim_states.done)]
         for _ in range(n_step):
             rng, key_action = jax.random.split(rng, 2)
-            rng_actions = jax.random.split(key_action, n_pop*n_env)
+            rng_actions = jax.random.split(key_action, n_pop * n_env)
             rng_actions = rng_actions.reshape((n_pop, n_env, -1))
             actions = self.all_actions(rng_actions, self.env.action_size)
             sim_states = self.all_step(sim_states, actions)

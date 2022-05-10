@@ -20,7 +20,7 @@ configurations:
     # 500-pop test : 
     {'n_pop' : 500, 'n_env' : 1,     'n_step': 1000  },
   ]
-save_filename : no_actor.csv
+save_filename : no_actor
 
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch

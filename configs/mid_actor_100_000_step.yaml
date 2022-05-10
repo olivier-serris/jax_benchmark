@@ -1,8 +1,21 @@
 n_repetition: 10
 env_name : inverted_pendulum
-actor : no_actor
+actor : '[256,256] actor'
 legacy_spring : true
 device : ???
+
+jax_model:
+  _target_ : networks.flax_networks.create_MLP
+  hidden_sizes : [256,256]
+  activation : flax.linen.relu
+    # output_activation : flax.linen.relu #  if not specified => identity activation function for the output
+
+pytorch_model:
+    _target_ : networks.pytorch_networks.MLP
+    hidden_sizes : [256,256]
+    activation : torch.nn.ReLU
+      # output_activation : #  if not specified => identity activation function for the output
+
 
 configurations: 
   [
@@ -11,20 +24,16 @@ configurations:
     {'n_pop' : 1,   'n_env' : 500,  'n_step': 200 },
     {'n_pop' : 1,   'n_env' : 6250, 'n_step': 16 },
     # 10-individuals test :
-    # {'n_pop' : 10,  'n_env' : 1,    'n_step': 200  }, #carefull smaller number of steps
     {'n_pop' : 10,  'n_env' : 50,    'n_step': 200  },
     {'n_pop' : 10,  'n_env' : 10,    'n_step': 1000  },
     # 100-indiviuals test :
-    # {'n_pop' : 100, 'n_env' : 1,     'n_step': 200  }, #carefull smaller number of steps
     {'n_pop' : 100, 'n_env' : 5,     'n_step': 200  }, 
     {'n_pop' : 100, 'n_env' : 1,     'n_step': 1000  },
   ]
-save_filename : no_actor
+save_filename : mid_actor
 
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch
 classes : 
-  fmm_no : no_actors.exp_utils.with_pytorch_setup
-    # _target_ : no_actors.exp_utils.with_pytorch_setup
-  mms_no : no_actors.exp_utils.with_jax_setup
-    # _target_ : no_actors.exp_utils.with_jax_setup
+  torch_256_x2 : with_actors.exp_utils.with_pytorch_setup
+  jax_256_x2 : with_actors.exp_utils.with_jax_setup

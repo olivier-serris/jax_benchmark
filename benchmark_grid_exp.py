@@ -13,6 +13,12 @@ import torch
 import timeit
 from dataclasses import dataclass
 import gc
+from plots.plot_results import multi_plot
+
+# have torch allocate on device first, to prevent JAX from swallowing up all the
+# GPU memory. By default JAX will pre-allocate 90% of the available GPU memory:
+# https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
+v = torch.ones(1, device="cuda")
 
 
 @dataclass
@@ -71,7 +77,7 @@ def time_experiments(cfg) -> List[DataPoint]:
             construct_rollout_fct = hydra.utils.get_method(setup_path)
             rollout_fct = construct_rollout_fct(cfg, n_pop, n_env, n_step)
             # warm_up :
-            rollout_fct()
+            get_rollouts_times(rollout_fct, n_pop, n_env, n_step, 2, label)
             # real experiment:
             result = get_rollouts_times(
                 rollout_fct,
@@ -91,11 +97,19 @@ def time_experiments(cfg) -> List[DataPoint]:
     config_path=f"{os.getcwd()}/configs/", config_name="no_actor_100_000_step.yaml"
 )
 def main(cfg):
+    os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
     start = time.time()
     results = time_experiments(cfg)
     df = pd.DataFrame(results)
-    df.to_csv(cfg.save_filename)
+    df.to_csv(cfg.save_filename + ".csv")
     print("total exp time: ", time.time() - start)
+    # todo veriry multiplot location :
+    multi_plot(
+        df,
+        cfg.env_name,
+        cfg.device,
+        f"{os.getcwd()}/{cfg.save_filename}.png",
+    )
 
 
 if __name__ == "__main__":
