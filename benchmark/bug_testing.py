@@ -1,15 +1,14 @@
 import brax.envs as brax_env
 import jax
 
-from no_actors.exp_utils import with_jax_setup as no_actor_with_jax
-from no_actors.exp_utils import with_pytorch_setup as no_actor_with_pytorch
-from with_actors.exp_utils import with_pytorch_setup as actor_with_pytorch
-from with_actors.exp_utils import with_jax_setup as actor_with_jax
-from with_actors.rollout_pytorch import RolloutPytorch
-from benchmark_grid_exp import get_rollouts_times
+from jax_rollout.no_actors.exp_utils import with_jax_setup as no_actor_with_jax
+from jax_rollout.no_actors.exp_utils import with_pytorch_setup as no_actor_with_pytorch
+from jax_rollout.with_actors.exp_utils import with_pytorch_setup as actor_with_pytorch
+from jax_rollout.with_actors.exp_utils import with_jax_setup as actor_with_jax
+from jax_rollout.with_actors.rollout_pytorch import RolloutPytorch
+from benchmark.benchmark_grid_exp import get_rollouts_times
 import os
 from hydra import compose, initialize
-from omegaconf import OmegaConf
 
 
 def verify_recompilations():

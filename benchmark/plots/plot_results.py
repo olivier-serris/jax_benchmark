@@ -160,7 +160,7 @@ def plot_from_all_exps(save_filepath, selects, device=None):
 
 def main():
     plot_each_exp()
-    plot_from_all_exps("plots/spc", selects=[("total_steps", 100000)])
+    plot_from_all_exps("jax_benchmark/plots/spc", selects=[("total_steps", 100000)])
 
 
 if __name__ == "__main__":

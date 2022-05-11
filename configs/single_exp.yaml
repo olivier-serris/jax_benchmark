@@ -6,13 +6,13 @@ profiling : True
 pytorch_device : cuda
 
 jax_model:
-  _target_ : networks.flax_networks.create_MLP
+  _target_ : jax_rollout.networks.flax_networks.create_MLP
   hidden_sizes : [256,256]
   activation : flax.linen.relu
     # output_activation : flax.linen.relu #  if not specified => identity activation function for the output
 
 pytorch_model:
-    _target_ : networks.pytorch_networks.MLP
+    _target_ : jax_rollout.networks.pytorch_networks.MLP
     hidden_sizes : [256,256]
     activation : torch.nn.ReLU
       # output_activation : #  if not specified => identity activation function for the output
@@ -25,14 +25,14 @@ n_step : 1000
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch
 method: 
-  path : with_actors.exp_utils.with_pytorch_setup
+  path : jax_rollout.with_actors.exp_utils.with_pytorch_setup
   name : pytorch_256_x2
 # method: 
-#   path : with_actors.exp_utils.with_jax_setup
+#   path : jax_rollout.with_actors.exp_utils.with_jax_setup
 #   name : jax_256_x2
 # method: 
-#   path : no_actors.exp_utils.with_pytorch_setup
+#   path : jax_rollout.no_actors.exp_utils.with_pytorch_setup
 #   name : fmm_no
 # method: 
-#   path : no_actors.exp_utils.with_pytorch_setup
+#   path : jax_rollout.no_actors.exp_utils.with_pytorch_setup
 #   name : mms_no

@@ -47,15 +47,6 @@ def get_rollouts_times(
 
 
 def time_experiments(cfg) -> List[DataPoint]:
-
-    # set the current device used :
-    OmegaConf.set_struct(cfg, True)
-    with open_dict(cfg):
-        current_device_id = torch.cuda.current_device()
-        cfg.device = str(torch.cuda.get_device_name(current_device_id))
-    cfg_save_path = os.path.join(os.getcwd(), ".hydra", "config.yaml")
-    OmegaConf.save(cfg, cfg_save_path)
-
     # all values :
     print("launch exp :")
     data_points = []
@@ -65,6 +56,11 @@ def time_experiments(cfg) -> List[DataPoint]:
 
         for el in cfg.classes.items():
             label, setup_path = el
+            from jax_rollout.no_actors.exp_utils import (
+                with_jax_setup,
+                with_pytorch_setup,
+            )
+
             construct_rollout_fct = hydra.utils.get_method(setup_path)
             rollout_fct = construct_rollout_fct(cfg, n_pop, n_env, n_step)
             # warm_up :

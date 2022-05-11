@@ -1,6 +1,7 @@
 from brax import envs as brax_env
 import chex
 import jax.numpy as jnp
+from IPython.display import HTML, Image
 
 
 @chex.dataclass
@@ -27,3 +28,8 @@ class RolloutData:
     @staticmethod
     def to_transition(rollout: "RolloutData") -> "RolloutData":
         pass
+
+    def to_video():
+        pass
+        # HTML(html.render(env.sys, [s.qp for s in rollout]))
+        # Image(image.render(env.sys, [s.qp for s in rollout], width=320, height=240))

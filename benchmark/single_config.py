@@ -4,6 +4,8 @@ import logging
 import os
 import cProfile
 from pstats import Stats
+from omegaconf import OmegaConf, open_dict
+import torch
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -55,6 +57,13 @@ def single_time_experiment(cfg):
 
 @hydra.main(config_path=f"{os.getcwd()}/configs/", config_name="single_exp.yaml")
 def main(cfg):
+    # set the current device used :
+    OmegaConf.set_struct(cfg, True)
+    with open_dict(cfg):
+        current_device_id = torch.cuda.current_device()
+        cfg.device = str(torch.cuda.get_device_name(current_device_id))
+    cfg_save_path = os.path.join(os.getcwd(), ".hydra", "config.yaml")
+    OmegaConf.save(cfg, cfg_save_path)
     single_time_experiment(cfg)
 
 
