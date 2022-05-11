@@ -131,3 +131,6 @@ dmypy.json
 
 # vscode : 
 .vscode
+
+# perso cluster : 
+script_cluster
