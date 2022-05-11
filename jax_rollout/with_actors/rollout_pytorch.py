@@ -1,14 +1,13 @@
-from unittest import result
 import jax
 import chex
 from brax import envs as brax_env
 import functools
 import gym
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Union
 from brax.envs import wrappers, to_torch
 import torch
 import torch.nn as nn
-from with_actors.rollout_data import RolloutData
+from jax_rollout.with_actors.rollout_data import RolloutData
 from dataclasses import dataclass
 import dataclasses
 

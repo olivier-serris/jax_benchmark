@@ -1,8 +1,7 @@
 from typing import List
 import chex
-from numpy import isin
-from with_actors.rollout_pytorch import RolloutPytorch
-from with_actors.rollout_jax import RolloutJax
+from jax_rollout.with_actors.rollout_pytorch import RolloutPytorch
+from jax_rollout.with_actors.rollout_jax import RolloutJax
 import torch
 import hydra
 import hydra

@@ -1,7 +1,8 @@
 from brax import envs as brax_env
 import chex
 import jax.numpy as jnp
-from IPython.display import HTML, Image
+
+# from IPython.display import HTML, Image
 
 
 @chex.dataclass
