@@ -1,7 +1,6 @@
-n_repetition: 10
-env_name : inverted_pendulum
+n_repetition: 20
+env_name : ant
 legacy_spring : true
-actor : no_actor
 device : ???
 
 configurations: 
@@ -26,6 +25,4 @@ save_filename : no_actor
 # functions wich corresponds to rollout functions to launch
 classes : 
   fmm_no : 'no_actors.exp_utils.with_pytorch_setup'
-    # _target_ : 
   mms_no : no_actors.exp_utils.with_pytorch_setup
-    # _target_ : no_actors.exp_utils.with_jax_setup

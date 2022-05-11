@@ -1,5 +1,5 @@
-n_repetition: 10
-env_name : inverted_pendulum
+n_repetition: 20
+env_name : ant
 actor : '[256,256] actor'
 legacy_spring : true
 device : ???
