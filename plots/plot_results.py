@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import omegaconf
+from matplotlib.patches import Patch
 
 CONFIG = ".hydra/config.yaml"
 
@@ -39,6 +40,7 @@ def multi_plot(df, env_name, device, save_path, selects=[], show=False):
     rows = len(pop_values)
     columns = np.max(list(map(len, other_values.values())), axis=0)
     grid = plt.GridSpec(rows, columns, wspace=0.6, hspace=0.6)
+    bar_colors = {}
     for i, n_pop in enumerate(pop_values):
         ax = plt.subplot(grid[i, 0])
         ax.annotate(
@@ -66,10 +68,32 @@ def multi_plot(df, env_name, device, save_path, selects=[], show=False):
             ]
             g = sns.barplot(x="method", y="step_per_sec", data=c_df)
             # g = sns.boxplot(x="method", y="step_per_sec", data=c_df)
-
-            ax.bar_label(ax.containers[0], fmt="%.1e")
+            ax.bar_label(ax.containers[0], fmt="%.0e", fontsize=35 / len(ax.patches))
+            handle, label = ax.get_legend_handles_labels()
             g.set_xlabel(None)
+            ax.axes.xaxis.set_visible(False)
+
             n_repetitions.append(min(c_df.groupby("method").size()))
+    bar_colors = {
+        label: patch.get_facecolor()
+        for label, patch in zip(df["method"].unique(), ax.patches)
+    }
+    patches = [
+        Patch(facecolor=color, label=label) for label, color in bar_colors.items()
+    ]
+
+    # add legend in empty cell:
+    empty_row = np.argmin([len(other_values[pop]) for pop in pop_values])
+    empty_column = len(other_values[pop_values[empty_row]])
+    ax = plt.subplot(grid[empty_row, empty_column])
+    # plt.legend(handle)
+    ax.grid(False)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.legend(
+        handles=patches,
+        loc="center",
+    )
 
     fig.suptitle(
         f"Steps Per Second ({device}) ({env_name})"
