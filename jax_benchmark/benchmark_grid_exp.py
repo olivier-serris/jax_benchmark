@@ -92,7 +92,7 @@ def time_experiments(cfg) -> List[DataPoint]:
     return data_points
 
 
-# TODO : put torch tensor into memory for hybrid methods.
+# to change with command line : --config-name new_config
 @hydra.main(
     config_path=f"{os.getcwd()}/configs/", config_name="no_actor_100_000_step.yaml"
 )

@@ -68,7 +68,7 @@ def multi_plot(df, env_name, device, save_path, selects=[], show=False):
             ]
             g = sns.barplot(x="method", y="step_per_sec", data=c_df)
             # g = sns.boxplot(x="method", y="step_per_sec", data=c_df)
-            ax.bar_label(ax.containers[0], fmt="%.0e", fontsize=35 / len(ax.patches))
+            ax.bar_label(ax.containers[0], fmt="%.1e", fontsize=30 / len(ax.patches))
             handle, label = ax.get_legend_handles_labels()
             g.set_xlabel(None)
             ax.axes.xaxis.set_visible(False)
