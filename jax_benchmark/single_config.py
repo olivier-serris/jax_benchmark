@@ -1,10 +1,4 @@
-from benchmark_grid_exp import get_rollouts_times
-from tqdm import tqdm
-import jax
-import brax.envs as brax_env
-import argparse
-from no_actors.rollout_no_actors import mapP_mapE_laxS, forS_mapP_mapE
-import numpy as np
+from benchmark_utils import get_rollouts_times
 import hydra
 import logging
 import os
