@@ -5,7 +5,7 @@ import time
 import pandas as pd
 import os
 import torch
-from plots.plot_results import multi_plot
+from plots.plot_results import multi_plot_jax_vs_pytorch
 from benchmark.benchmark_utils import time_experiments
 from omegaconf import OmegaConf, open_dict
 
@@ -17,7 +17,7 @@ v = torch.ones(1, device="cuda")
 
 # to change with command line : --config-name new_config
 @hydra.main(
-    config_path=f"{os.getcwd()}/configs/", config_name="no_actor_100_000_step.yaml"
+    config_path=f"{os.getcwd()}/configs/", config_name="mid_actor_100_000_step.yaml"
 )
 def main(cfg):
     os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
@@ -36,7 +36,7 @@ def main(cfg):
     df.to_csv(cfg.save_filename + ".csv")
     print("total exp time: ", time.time() - start)
     # todo verify multiplot location :
-    multi_plot(
+    multi_plot_jax_vs_pytorch(
         df,
         cfg.env_name,
         cfg.device,

@@ -9,7 +9,7 @@ from matplotlib.patches import Patch
 CONFIG = ".hydra/config.yaml"
 
 
-def multi_plot(df, env_name, device, save_path, selects=[], show=False):
+def multi_plot(df, env_name, device, save_path, selects={}, show=False):
     """
     plot step_per_sec  of a given df and cfg.
     """
@@ -111,9 +111,20 @@ def multi_plot_jax_vs_pytorch(df, env_name, device, save_path, selects={}, show=
     """
 
     # add labels:
-    has_jax = (df["method"] == "mms_no") | (df["method"] == "jax_256_x2")
+    # has_jax = (df["method"] == "mms_no") | (df["method"] == "jax_256_x2")
     no_actor = (df["method"] == "mms_no") | (df["method"] == "fmm_no")
-    df["jax"] = np.where(has_jax, "jax", "pytorch")
+
+    df.loc[
+        (df["method"] == "mms_no") | (df["method"] == "jax_256_x2"), "worker"
+    ] = "jax"
+    df.loc[
+        (df["method"] == "fmm_no") | (df["method"] == "torch_256_x2"), "worker"
+    ] = "pytorch"
+    df.loc[
+        (df["method"] == "fff_no") | (df["method"] == "gym_256_x2"), "worker"
+    ] = "gym"
+
+    # df["jax"] = np.where(has_jax, "jax", "pytorch")
     df["has_actor"] = np.where(
         no_actor,
         "no_actor",
@@ -178,8 +189,9 @@ def multi_plot_jax_vs_pytorch(df, env_name, device, save_path, selects={}, show=
             g = sns.barplot(
                 x="has_actor",
                 y="step_per_sec",
-                hue="jax",
-                hue_order=["pytorch", "jax"],
+                hue="worker",
+                order=["actor", "no_actor"],
+                hue_order=["gym", "pytorch", "jax"],
                 data=c_df,
             )
             # g = sns.boxplot(x="method", y="step_per_sec", data=c_df)

@@ -11,6 +11,7 @@ import torch
 import jax.numpy as jnp
 from dataclasses import fields
 import torch.nn as nn
+import gym
 
 
 def with_pytorch_setup(cfg, n_pop, n_env, n_step):
@@ -27,7 +28,7 @@ def with_pytorch_setup(cfg, n_pop, n_env, n_step):
         n_pop=n_pop,
         n_env=n_env,
         n_step=n_step,
-        device="cuda",
+        device=cfg.torch_device,
     )
 
     actors: List[nn.Module] = [
@@ -39,7 +40,7 @@ def with_pytorch_setup(cfg, n_pop, n_env, n_step):
         for _ in range(n_pop)
     ]
     for actor in actors:
-        actor.to("cuda")
+        actor.to(cfg.torch_device)
 
     rng = jax.random.PRNGKey(0)
     rollout_worker.reset()
@@ -108,5 +109,39 @@ def with_jax_setup(cfg, n_pop, n_env, n_step):
                 data.block_until_ready()
 
         carry["sim_states"] = rollout_data.sim_states
+
+    return execute_rollout
+
+
+def with_gym_setup(cfg, n_pop, n_env, n_step):
+
+    env_name = str.capitalize(cfg.env_name) + "-" + cfg.gym_version
+    env = gym.vector.make(env_name, num_envs=n_env)
+
+    actors: List[nn.Module] = [
+        hydra.utils.instantiate(
+            cfg.pytorch_model,
+            in_dim=env.observation_space.shape[-1],
+            out_dim=env.action_space.shape[-1],
+        )
+        for _ in range(n_pop)
+    ]
+    for actor in actors:
+        actor.to(cfg.torch_device)
+
+    carry = {
+        "obs": torch.tensor(env.reset(), device=cfg.torch_device, dtype=torch.float),
+    }
+
+    def execute_rollout():
+        obs = carry["obs"]
+        with torch.no_grad():
+            for actor in actors:
+                for _ in range(n_step):
+                    action = actor(obs).cpu().numpy()
+                    obs, rewards, dones, infos = env.step(action)
+                    obs = torch.tensor(obs, device=cfg.torch_device, dtype=torch.float)
+
+        carry["obs"] = obs
 
     return execute_rollout
