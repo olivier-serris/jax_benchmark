@@ -12,23 +12,23 @@ from omegaconf import OmegaConf, open_dict
 # have torch allocate on device first, to prevent JAX from swallowing up all the
 # GPU memory. By default JAX will pre-allocate 90% of the available GPU memory:
 # https://jax.readthedocs.io/en/latest/gpu_memory_allocation.html
-v = torch.ones(1, device="cuda")
 
 
 # to change with command line : --config-name new_config
 @hydra.main(
-    config_path=f"{os.getcwd()}/configs/", config_name="mid_actor_100_000_step.yaml"
+    config_path=f"{os.getcwd()}/configs/", config_name="gym_actor_100_000_step.yaml"
 )
 def main(cfg):
     os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
-    # set the current device used :
-    OmegaConf.set_struct(cfg, True)
-    with open_dict(cfg):
-        current_device_id = torch.cuda.current_device()
-        cfg.device = str(torch.cuda.get_device_name(current_device_id))
-    cfg_save_path = os.path.join(os.getcwd(), ".hydra", "config.yaml")
-    OmegaConf.save(cfg, cfg_save_path)
+    if torch.cuda.is_available():
+        # set the current device used :
+        OmegaConf.set_struct(cfg, True)
+        with open_dict(cfg):
+            current_device_id = torch.cuda.current_device()
+            cfg.device = str(torch.cuda.get_device_name(current_device_id))
+        cfg_save_path = os.path.join(os.getcwd(), ".hydra", "config.yaml")
+        OmegaConf.save(cfg, cfg_save_path)
 
     start = time.time()
     results = time_experiments(cfg)

@@ -1,8 +1,10 @@
 n_repetition: 20
 env_name : ant
+gym_version : v3
 actor : '[256,256] actor'
 legacy_spring : true
 device : ???
+torch_device : cuda
 
 jax_model:
   _target_ : jax_rollout.networks.flax_networks.create_MLP
@@ -35,5 +37,6 @@ save_filename : mid_actor
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch
 classes : 
+  gym-256_x2 : jax_rollout.with_actors.exp_utils.with_gym_setup
   torch_256_x2 : jax_rollout.with_actors.exp_utils.with_pytorch_setup
   jax_256_x2 : jax_rollout.with_actors.exp_utils.with_jax_setup
