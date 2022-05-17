@@ -35,7 +35,6 @@ def main(cfg):
     df = pd.DataFrame(results)
     df.to_csv(cfg.save_filename + ".csv")
     print("total exp time: ", time.time() - start)
-    # todo verify multiplot location :
     multi_plot_jax_vs_pytorch(
         df,
         cfg.env_name,

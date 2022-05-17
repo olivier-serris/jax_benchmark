@@ -55,12 +55,8 @@ def time_experiments(cfg) -> List[DataPoint]:
         n_step = parameters["n_step"]
 
         for el in cfg.classes.items():
+            gc.collect()
             label, setup_path = el
-            from jax_rollout.no_actors.exp_utils import (
-                with_jax_setup,
-                with_pytorch_setup,
-            )
-
             construct_rollout_fct = hydra.utils.get_method(setup_path)
             rollout_fct = construct_rollout_fct(cfg, n_pop, n_env, n_step)
             # warm_up :
@@ -74,6 +70,5 @@ def time_experiments(cfg) -> List[DataPoint]:
                 n_repetition=cfg.n_repetition,
                 method_name=label,
             )
-            gc.collect()
             data_points.append(result)
     return data_points
