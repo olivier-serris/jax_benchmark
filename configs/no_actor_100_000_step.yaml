@@ -23,5 +23,6 @@ save_filename : no_actor
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch
 classes : 
+  # gym_no : jax_rollout.no_actors.exp_utils.with_gym_setup
   fmm_no : jax_rollout.no_actors.exp_utils.with_pytorch_setup
   mms_no : jax_rollout.no_actors.exp_utils.with_jax_setup

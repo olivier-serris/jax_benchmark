@@ -37,6 +37,6 @@ save_filename : mid_actor
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch
 classes : 
-  gym-256_x2 : jax_rollout.with_actors.exp_utils.with_gym_setup
+  # gym_256_x2 : jax_rollout.with_actors.exp_utils.with_gym_setup
   torch_256_x2 : jax_rollout.with_actors.exp_utils.with_pytorch_setup
   jax_256_x2 : jax_rollout.with_actors.exp_utils.with_jax_setup

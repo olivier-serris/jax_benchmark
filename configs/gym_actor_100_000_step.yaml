@@ -1,4 +1,4 @@
-n_repetition: 20
+n_repetition: 1
 env_name : ant
 gym_version : v3
 actor : '[256,256] actor'
@@ -22,9 +22,9 @@ pytorch_model:
 configurations: 
   [
     # 1-individual tests : 
-    {'n_pop' : 1,   'n_env' : 100,  'n_step': 1000 },
+    # {'n_pop' : 1,   'n_env' : 6250, 'n_step': 16 },
     {'n_pop' : 1,   'n_env' : 500,  'n_step': 200 },
-    {'n_pop' : 1,   'n_env' : 6250, 'n_step': 16 },
+    {'n_pop' : 1,   'n_env' : 100,  'n_step': 1000 },
     # 10-individuals test :
     {'n_pop' : 10,  'n_env' : 50,    'n_step': 200  },
     {'n_pop' : 10,  'n_env' : 10,    'n_step': 1000  },
@@ -37,4 +37,4 @@ save_filename : mid_actor
 # declaration of a methods, a list containing 
 # functions wich corresponds to rollout functions to launch
 classes : 
-  gym-256_x2 : jax_rollout.with_actors.exp_utils.with_gym_setup
+  gym_256_x2 : jax_rollout.with_actors.exp_utils.with_gym_setup

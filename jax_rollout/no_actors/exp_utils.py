@@ -1,6 +1,8 @@
 from jax_rollout.no_actors.rollout_no_actors import forS_mapP_mapE, mapP_mapE_laxS
 import brax.envs as brax_env
 import jax
+import gym
+import numpy as np
 
 
 def with_pytorch_setup(cfg, n_pop, n_env, n_step):
@@ -48,5 +50,18 @@ def with_jax_setup(cfg, n_pop, n_env, n_step):
         for data in rollout_data:
             data.block_until_ready()
         carry["seed"] = jax.random.split(carry["seed"], 2)
+
+    return execute_rollout
+
+
+def with_gym_setup(cfg, n_pop, n_env, n_step):
+    env_name = str.capitalize(cfg.env_name) + "-" + cfg.gym_version
+    env = gym.vector.make(env_name, num_envs=n_env)
+
+    def execute_rollout():
+        for _ in range(n_pop):
+            for _ in range(n_step):
+                action = np.ones(env.action_space.shape[-1])
+                obs, rewards, dones, infos = env.step(action)
 
     return execute_rollout
