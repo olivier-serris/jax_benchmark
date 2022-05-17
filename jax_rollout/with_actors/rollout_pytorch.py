@@ -10,6 +10,8 @@ import torch.nn as nn
 from jax_rollout.with_actors.rollout_data import RolloutData
 from dataclasses import dataclass
 import dataclasses
+from functorch import combine_state_for_ensemble
+import functorch
 
 # TODO :
 # add generic way to specify keys
@@ -64,10 +66,10 @@ def create(
 
     if auto_reset:
         env = wrappers.AutoResetWrapper(env)
-    if n_env > 1:
-        env = wrappers.VectorWrapper(env, n_env)
-    if n_pop > 1:
-        env = wrappers.VectorWrapper(env, n_pop)
+    # if n_env > 1:
+    env = wrappers.VectorWrapper(env, n_env)
+    # if n_pop > 1:
+    env = wrappers.VectorWrapper(env, n_pop)
     if eval_metrics:
         env = wrappers.EvalWrapper(env)
 
@@ -105,27 +107,34 @@ class RolloutPytorch:
     """
 
     def __init__(
-        self, env_name: brax_env.Env, n_pop: int, n_env: int, n_step: int, device="cuda"
+        self,
+        env_name: brax_env.Env,
+        n_pop: int,
+        n_env: int,
+        n_step: int,
+        device="cuda",
     ) -> None:
         self.n_pop = n_pop
         self.n_env = n_env
         self.n_step = n_step
 
-        data_shape = (self.n_pop, self.n_env)
-        self.data_shape = torch.Size(list(filter(lambda x: x != 1, data_shape)))
-
         gym_name = "brax-" + env_name + "-v0"
+        if gym_name in gym.envs.registry.env_specs:
+            del gym.envs.registry.env_specs[gym_name]
         entry_point = functools.partial(create_gym_env, env_name=env_name)
         gym.register(gym_name, entry_point=entry_point)
         env = gym.make(gym_name, n_pop=n_pop, n_env=n_env, episode_length=n_step)
         self.env = to_torch.JaxToTorchWrapper(env, device=device)
 
+    def set_actors(self, actors: List[nn.Module]):
+        predict, self.params, self.buffers = combine_state_for_ensemble(actors)
+        # TODO: buffer are ignored, see i
+        self.all_actions = functorch.vmap(predict)
+
     def reset(self) -> None:
         self.last_obs = self.env.reset()
 
-    def rollout(
-        self, actors: List[nn.Module], rng: jax.random.KeyArray, reset: bool = False
-    ) -> chex.Array:
+    def rollout(self, reset: bool = False) -> chex.Array:
         """
         Execute complete episodes with n_pop individual, each on n_env environments.
         return a tuple [obs, rewards, dones]
@@ -140,19 +149,10 @@ class RolloutPytorch:
 
         results = []
         for _ in range(self.n_step):
-
-            if len(actors) > 1:
-                actions = []
-                for i, actor in enumerate(actors):
-                    actions.append(actor(cur_obs[i]))
-                actions = torch.stack(actions)
-                actions.squeeze()
-            else:
-                actions = actors[0](cur_obs)
-            assert (
-                actions.shape[:-1] == self.data_shape[:]
-            ), f"mismatch action has shape {actions.shape[:-1]} instead of {self.data_shape}"
-
+            with torch.no_grad():
+                actions = self.all_actions(
+                    self.params, self.buffers, cur_obs.view(self.n_pop, self.n_env, -1)
+                )
             next_obs, reward, done, info = self.env.step(actions)
             truncation = (
                 info["Timelimit.truncated"]

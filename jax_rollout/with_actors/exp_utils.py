@@ -42,29 +42,23 @@ def with_pytorch_setup(cfg, n_pop, n_env, n_step):
     for actor in actors:
         actor.to(cfg.torch_device)
 
-    rng = jax.random.PRNGKey(0)
+    rollout_worker.set_actors(actors)
     rollout_worker.reset()
 
     # dict captured by execute_rollout to carry values between exections.
     carry = {
         "rollout_cls": rollout_worker,
-        "actors": actors,
-        "seed": rng,
     }
 
     def execute_rollout():
-        rng = carry["seed"]
         """launch a rollout and make sure that the execution is finished."""
         rollout_worker: RolloutPytorch = carry["rollout_cls"]
-        actors = carry["actors"]
-        rollout_data = rollout_worker.rollout(actors, rng, reset=False)
+        rollout_data = rollout_worker.rollout(reset=False)
 
         for field in fields(rollout_data):
             data = getattr(rollout_data, field.name)
             if isinstance(data, chex.Array):
                 data.block_until_ready()
-
-        carry["seed"] = jax.random.split(carry["seed"], 2)
 
     return execute_rollout
 
@@ -114,7 +108,6 @@ def with_jax_setup(cfg, n_pop, n_env, n_step):
 
 
 def with_gym_setup(cfg, n_pop, n_env, n_step):
-
     env_name = str.capitalize(cfg.env_name) + "-" + cfg.gym_version
     env = gym.vector.make(env_name, num_envs=n_env)
 
