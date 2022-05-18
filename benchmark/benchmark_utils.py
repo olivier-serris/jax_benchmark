@@ -10,6 +10,7 @@ import torch
 import timeit
 from dataclasses import dataclass
 import gc
+import os, platform, subprocess, re
 
 
 @dataclass
@@ -72,3 +73,27 @@ def time_experiments(cfg) -> List[DataPoint]:
             )
             data_points.append(result)
     return data_points
+
+
+def get_processor_name():
+    if platform.system() == "Windows":
+        return platform.processor()
+    elif platform.system() == "Darwin":
+        os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
+        command = "sysctl -n machdep.cpu.brand_string"
+        return str(subprocess.check_output(command).strip())
+    elif platform.system() == "Linux":
+        command = "cat /proc/cpuinfo"
+        all_info = subprocess.check_output(command, shell=True).decode().strip()
+        for line in all_info.split("\n"):
+            if "model name" in line:
+                return re.sub(".*model name.*:", "", line, 1)
+    return ""
+
+
+def get_device_name():
+    if torch.cuda.is_available():
+        current_device_id = torch.cuda.current_device()
+        return str(torch.cuda.get_device_name(current_device_id))
+    else:
+        return get_processor_name()
