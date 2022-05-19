@@ -9,6 +9,7 @@ requirements = [
     "brax",
     "chex",
     "torch",
+    "functorch",
     "numpy",
     "seaborn",
     "matplotlib>=3.3.4",
