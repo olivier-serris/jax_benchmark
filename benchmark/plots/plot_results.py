@@ -105,7 +105,9 @@ def multi_plot(df, env_name, device, save_path, selects={}, show=False):
     plt.close(fig)
 
 
-def multi_plot_jax_vs_pytorch(df, env_name, device, save_path, selects={}, show=False):
+def multi_plot_jax_vs_pytorch(
+    df, env_name, device, save_path, selects={}, show=False, logscale=True
+):
     """
     plot step_per_sec  of a given df and cfg.
     """
@@ -158,7 +160,12 @@ def multi_plot_jax_vs_pytorch(df, env_name, device, save_path, selects={}, show=
     fig = plt.figure(figsize=(12, 6))
 
     rows = len(pop_values)
-    columns = np.max(list(map(len, other_values.values())), axis=0)
+    row_lens = np.fromiter(map(len, other_values.values()), dtype=int)
+    if (row_lens[:-1] == row_lens[1:]).all():  # if all rows have the same length
+        columns = row_lens[0] + 1
+    else:
+        columns = np.max(row_lens)
+    # columns = np.max(list(map(len, other_values.values())), axis=0)
     grid = plt.GridSpec(rows, columns, wspace=0.6, hspace=0.6)
 
     for i, n_pop in enumerate(pop_values):
@@ -178,9 +185,12 @@ def multi_plot_jax_vs_pytorch(df, env_name, device, save_path, selects={}, show=
 
             ax.set_title("Subplot row %s \n" % i, fontsize=16)
             ax.set_title(f"n_env={n_env},n_step={n_step} ")
-            ax.set_yscale("log")
-            ax.set(ylim=(1e1, 1e8))
-            ax.set_yticks(10 ** (np.arange(1, 9)))
+            if logscale:
+                ax.set_yscale("log")
+                ax.set(ylim=(1e1, 1e8))
+                ax.set_yticks(10 ** (np.arange(1, 9)))
+            else:
+                ax.set(ylim=(0, df["step_per_sec"].unique().max() * 1.1))
             c_df = df.loc[
                 (df["n_pop"] == n_pop)
                 & (df["n_env"] == n_env)
@@ -199,7 +209,6 @@ def multi_plot_jax_vs_pytorch(df, env_name, device, save_path, selects={}, show=
                 ax.bar_label(container, fmt="%.e", fontsize=30 / len(ax.patches))
                 for container in ax.containers
             ]
-            # ax.bar_label(ax.containers[0], fmt="%.1e", fontsize=30 / len(ax.patches))
             handle, label = ax.get_legend_handles_labels()
             ax.get_legend().remove()
             g.set_xlabel(None)
