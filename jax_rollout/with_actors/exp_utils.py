@@ -12,6 +12,9 @@ import jax.numpy as jnp
 from dataclasses import fields
 import torch.nn as nn
 import gym
+import envpool
+import functorch
+from functorch import combine_state_for_ensemble
 
 
 def with_pytorch_setup(cfg, n_pop, n_env, n_step):
@@ -134,6 +137,52 @@ def with_gym_setup(cfg, n_pop, n_env, n_step):
                     action = actor(obs).cpu().numpy()
                     obs, rewards, dones, infos = env.step(action)
                     obs = torch.tensor(obs, device=cfg.torch_device, dtype=torch.float)
+
+        carry["obs"] = obs
+
+    return execute_rollout
+
+
+def with_envpool_sync_setup(cfg, n_pop, n_env, n_step):
+    import multiprocessing
+
+    num_cpu = multiprocessing.cpu_count()
+    env_name = str.capitalize(cfg.env_name) + "-" + cfg.gym_version
+    num_threads = min(num_cpu, n_env * n_step)
+    print("num_theads : ", num_threads)
+    env = envpool.make(
+        env_name, env_type="gym", num_envs=n_env * n_pop, num_threads=num_threads
+    )
+
+    actors: List[nn.Module] = [
+        hydra.utils.instantiate(
+            cfg.pytorch_model,
+            in_dim=env.observation_space.shape[-1],
+            out_dim=env.action_space.shape[-1],
+        )
+        for _ in range(n_pop)
+    ]
+    for actor in actors:
+        actor.to(cfg.torch_device)
+
+    predict, params, buffers = combine_state_for_ensemble(actors)
+    all_actions = functorch.vmap(predict)
+
+    carry = {
+        "obs": torch.tensor(env.reset(), device=cfg.torch_device, dtype=torch.float),
+        "params": params,
+        "buffers": buffers,
+    }
+
+    def execute_rollout():
+        obs = carry["obs"]
+        params, buffers = carry["params"], carry["buffers"]
+        with torch.no_grad():
+            for _ in range(n_step):
+                actions = all_actions(params, buffers, obs.view(n_pop, n_env, -1))
+                actions = actions.reshape(n_pop * n_env, -1).cpu().numpy()
+                obs, rewards, dones, infos = env.step(actions)
+                obs = torch.tensor(obs, device=cfg.torch_device, dtype=torch.float)
 
         carry["obs"] = obs
 
