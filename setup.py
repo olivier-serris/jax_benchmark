@@ -17,6 +17,7 @@ requirements = [
     "pandas",
     "omegaconf",
     "hydra-core",
+    "poolenv",
 ]
 setup(
     name="jax benchmark",
